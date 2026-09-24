@@ -200,3 +200,36 @@ function startBot() {
 }
 
 startBot();
+// ==========================================
+// PORT FORWARDING LIVE VIEWER
+// ==========================================
+const http = require('http');
+
+const webServer = http.createServer((req, res) => {
+    // Read the latest wins and losses from your database
+    db.all("SELECT * FROM trades", [], (err, rows) => {
+        const totalTrades = rows ? rows.length : 0;
+        const wins = rows ? rows.filter(row => row.status === 'WIN').length : 0;
+        const losses = rows ? rows.filter(row => row.status === 'LOSS').length : 0;
+        const winRatio = totalTrades > 0 ? ((wins / totalTrades) * 100).toFixed(2) : 0;
+
+        // Simple mobile-friendly text display
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(`
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>body { font-family: sans-serif; background: #121212; color: #fff; padding: 20px; }</style>
+            <h2>📊 Pluto FX Mobile Dashboard</h2>
+            <hr>
+            <p>🔄 Total Positions Logged: <strong>${totalTrades}</strong></p>
+            <p>✅ Winning Positions: <span style="color: #4CAF50;"><strong>${wins}</strong></span></p>
+            <p>⚠️ Losing Positions: <span style="color: #FF5722;"><strong>${losses}</strong></span></p>
+            <p>📈 Calculated Win Rate: <strong>${winRatio}%</strong></p>
+        `);
+    });
+});
+
+// Open communication Port 3000
+webServer.listen(3000, () => {
+    console.log("⚡ Mobile Port 3000 is open and ready!");
+});
+           
